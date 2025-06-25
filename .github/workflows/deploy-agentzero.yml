@@ -1,0 +1,107 @@
+name: Deploy to AgentZero
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+# Ensure workflow runs on schedule
+concurrency:
+  group: deployment-agentzero
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'yarn'
+
+    - name: Install dependencies
+      run: yarn install --frozen-lockfile
+
+    - name: Build application
+      run: |
+        # Build the Excalidraw app
+        yarn build:app
+      env:
+        NODE_ENV: production
+        CI: true
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ secrets.AGENTZERO_SSH_KEY }}
+
+    - name: Add server to known hosts
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -H ${{ secrets.AGENTZERO_HOST }} >> ~/.ssh/known_hosts
+
+    - name: Deploy to server
+      env:
+        DEPLOY_USER: ${{ secrets.AGENTZERO_USER }}
+        DEPLOY_HOST: ${{ secrets.AGENTZERO_HOST }}
+        DEPLOY_DIR: ${{ secrets.AGENTZERO_DEPLOY_DIR }}
+      run: |
+        echo "🚀 Deploying to AgentZero server..."
+        
+        # Create deployment directory
+        ssh $DEPLOY_USER@$DEPLOY_HOST "mkdir -p $DEPLOY_DIR"
+        
+        # Upload build files
+        rsync -avz --delete \
+          excalidraw-app/build/ \
+          $DEPLOY_USER@$DEPLOY_HOST:$DEPLOY_DIR/
+        
+        # Setup and restart PM2 process
+        ssh $DEPLOY_USER@$DEPLOY_HOST << 'ENDSSH'
+          cd ${{ secrets.AGENTZERO_DEPLOY_DIR }}
+          
+          # Install http-server if needed
+          which http-server || npm install -g http-server
+          
+          # Stop existing process if running
+          pm2 stop excalidraw-app 2>/dev/null || true
+          
+          # Start the application with PM2
+          pm2 start http-server --name excalidraw-app -- -p 5001 -a localhost --cors
+          
+          # Save PM2 configuration
+          pm2 save
+          
+          echo "✅ Application deployed and started on port 5001"
+        ENDSSH
+
+    - name: Health check
+      run: |
+        echo "🔍 Waiting for application to be ready..."
+        sleep 10
+        
+        # Check if the app is responding (via proxy)
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://excalidraw.parlaymojo.com || echo "000")
+        
+        if [ "$response" = "200" ]; then
+          echo "✅ Application is live at https://excalidraw.parlaymojo.com"
+        else
+          echo "⚠️ Application returned status code: $response"
+          echo "Check server logs with: pm2 logs excalidraw-app"
+        fi
+
+    - name: Notify deployment status
+      if: always()
+      run: |
+        if [ "${{ job.status }}" = "success" ]; then
+          echo "✅ Deployment successful!"
+        else
+          echo "❌ Deployment failed. Check the logs above for details."
+        fi
