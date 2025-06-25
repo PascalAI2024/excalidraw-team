@@ -4,7 +4,9 @@ import dotenv from 'dotenv';
 import { clerkClient } from '@clerk/clerk-sdk-node';
 import { PrismaClient } from '../../generated/prisma';
 
+// Load environment variables
 dotenv.config({ path: '../.env.local' });
+dotenv.config({ path: './.env' });
 
 const app = express();
 const prisma = new PrismaClient();

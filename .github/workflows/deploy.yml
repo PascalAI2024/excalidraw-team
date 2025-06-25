@@ -24,6 +24,22 @@ jobs:
           # Pull latest changes
           git pull origin main
           
+          # Update environment variables
+          cat > .env.local << 'EOF'
+          VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
+          DATABASE_URL="${{ secrets.DATABASE_URL }}"
+          VITE_APP_BACKEND_URL=https://excalidraw.parlaymojo.com/api
+          NODE_ENV=production
+          EOF
+          
+          # Update server .env
+          cat > server/.env << 'EOF'
+          DATABASE_URL="${{ secrets.DATABASE_URL }}"
+          FRONTEND_URL=https://excalidraw.parlaymojo.com
+          PORT=3001
+          EOF
+          
           # Install dependencies
           npm install --legacy-peer-deps
           
