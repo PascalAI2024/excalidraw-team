@@ -1,0 +1,16 @@
+# Commands to run on the server to complete nginx setup
+
+# 1. Move config to nginx sites-available
+sudo mv /tmp/excalidraw.parlaymojo.com /etc/nginx/sites-available/excalidraw.parlaymojo.com
+
+# 2. Create symlink to sites-enabled
+sudo ln -sf /etc/nginx/sites-available/excalidraw.parlaymojo.com /etc/nginx/sites-enabled/
+
+# 3. Test nginx configuration
+sudo nginx -t
+
+# 4. If test passes, reload nginx
+sudo systemctl reload nginx
+
+# 5. Verify the site
+curl -I http://excalidraw.parlaymojo.com

@@ -47,7 +47,7 @@ EOF
 # Create .env.local for the frontend
 cat > .env.local << 'EOF'
 # Clerk Auth (from GitHub secrets)
-VITE_APP_CLERK_PUBLISHABLE_KEY=pk_test_c3VpdGFibGUtbWFyaW4tMTcuY2xlcmsuYWNjb3VudHMuZGV2JA
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_YnJhdmUtY2FsZi0zMi5jbGVyay5hY2NvdW50cy5kZXYk
 
 # Backend URL
 VITE_APP_BACKEND_URL=http://excalidraw.parlaymojo.com:3001
