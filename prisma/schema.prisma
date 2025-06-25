@@ -1,0 +1,59 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String        @id @default(cuid())
+  clerkId       String        @unique
+  email         String        @unique
+  name          String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  drawings      Drawing[]
+  sharedWithMe  Share[]       @relation("SharedWithUser")
+}
+
+model Drawing {
+  id            String        @id @default(cuid())
+  title         String
+  content       Json          // Stores the Excalidraw scene data
+  thumbnail     String?       // Optional thumbnail URL
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  shares        Share[]
+  isPublic      Boolean       @default(false)
+  
+  @@index([userId])
+}
+
+model Share {
+  id            String        @id @default(cuid())
+  drawingId     String
+  drawing       Drawing       @relation(fields: [drawingId], references: [id], onDelete: Cascade)
+  sharedWithId  String
+  sharedWith    User          @relation("SharedWithUser", fields: [sharedWithId], references: [id], onDelete: Cascade)
+  permission    Permission    @default(VIEW)
+  createdAt     DateTime      @default(now())
+  
+  @@unique([drawingId, sharedWithId])
+  @@index([sharedWithId])
+}
+
+enum Permission {
+  VIEW
+  EDIT
+}
