@@ -19,10 +19,15 @@ jobs:
         port: 22
         script: |
           # Navigate to the app directory
-          cd /var/www/excalidraw.parlaymojo.com
+          mkdir -p /home/pascal/www/excalidraw.parlaymojo.com
+          cd /home/pascal/www/excalidraw.parlaymojo.com
           
-          # Pull latest changes
-          git pull origin main
+          # Clone or pull latest changes
+          if [ ! -d ".git" ]; then
+            git clone https://github.com/PascalAI2024/excalidraw-team.git .
+          else
+            git pull origin main
+          fi
           
           # Update environment variables
           cat > .env.local << 'EOF'
@@ -55,12 +60,14 @@ jobs:
           npx prisma generate
           npx prisma migrate deploy
           
+          # Use local PM2 if global not available
+          export PATH=$PATH:./node_modules/.bin
+          
           # Restart services with PM2
-          pm2 restart excalidraw-backend || pm2 start server/src/index.js --name excalidraw-backend
-          pm2 restart excalidraw-frontend || pm2 serve build 5173 --name excalidraw-frontend --spa
+          npx pm2 restart excalidraw-backend || npx pm2 start server/src/index.js --name excalidraw-backend
+          npx pm2 restart excalidraw-frontend || npx pm2 serve build 5173 --name excalidraw-frontend --spa
           
           # Save PM2 configuration
-          pm2 save
+          npx pm2 save
           
-          # Reload nginx if config changed
-          sudo nginx -t && sudo systemctl reload nginx
+          # Note: nginx reload requires manual configuration
