@@ -1,0 +1,50 @@
+name: Deploy to excalidraw.parlaymojo.com
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.DEPLOY_HOST }}
+        username: ${{ secrets.DEPLOY_USER }}
+        key: ${{ secrets.DEPLOY_KEY }}
+        port: ${{ secrets.DEPLOY_PORT }}
+        script: |
+          # Navigate to the app directory
+          cd /var/www/excalidraw.parlaymojo.com
+          
+          # Pull latest changes
+          git pull origin main
+          
+          # Install dependencies
+          npm install --legacy-peer-deps
+          
+          # Build the frontend
+          npm run build
+          
+          # Install server dependencies
+          cd server
+          npm install
+          
+          # Run database migrations
+          cd ..
+          npx prisma generate
+          npx prisma migrate deploy
+          
+          # Restart services with PM2
+          pm2 restart excalidraw-backend || pm2 start server/src/index.js --name excalidraw-backend
+          pm2 restart excalidraw-frontend || pm2 serve build 5173 --name excalidraw-frontend --spa
+          
+          # Save PM2 configuration
+          pm2 save
+          
+          # Reload nginx if config changed
+          sudo nginx -t && sudo systemctl reload nginx
