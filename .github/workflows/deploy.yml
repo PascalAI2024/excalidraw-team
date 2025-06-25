@@ -30,13 +30,16 @@ jobs:
           fi
           
           # Update environment variables
-          cat > .env.local << 'EOF'
+          cat > .env << 'EOF'
           VITE_CLERK_PUBLISHABLE_KEY=${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
           CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
           DATABASE_URL="${{ secrets.DATABASE_URL }}"
           VITE_APP_BACKEND_URL=https://excalidraw.parlaymojo.com/api
           NODE_ENV=production
           EOF
+          
+          # Also create .env.local for backwards compatibility
+          cp .env .env.local
           
           # Update server .env
           cat > server/.env << 'EOF'
