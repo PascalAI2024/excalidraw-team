@@ -167,4 +167,4 @@ find $BACKUP_DIR -name "excalidraw_*" -mtime +7 -delete
 Add to crontab:
 ```bash
 0 2 * * * /home/user/backup-excalidraw.sh
-```
+```# Auto-deploy trigger Wed Jun 25 05:29:25 PM EDT 2025
