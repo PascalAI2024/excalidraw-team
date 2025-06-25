@@ -111,6 +111,25 @@ Check out our [documentation](https://docs.excalidraw.com/docs/@excalidraw/excal
 - [VScode extension](https://marketplace.visualstudio.com/items?itemName=pomdtr.excalidraw-editor)
 - [npm package](https://www.npmjs.com/package/@excalidraw/excalidraw)
 
+## Team Features
+
+This fork includes additional team collaboration features:
+
+- **Authentication**: Secure user authentication with Clerk
+- **Cloud Storage**: Save and load drawings from PostgreSQL database
+- **Team Sharing**: Share drawings with team members (View/Edit permissions)
+- **Shared Drawings**: Access drawings shared with you by teammates
+
+For setup instructions, see [TEAM_SETUP.md](./TEAM_SETUP.md).
+
+## Deployment
+
+This project supports automated deployment using GitHub Actions. For deployment configuration:
+
+1. See [DEPLOYMENT_SECRETS.md](./DEPLOYMENT_SECRETS.md) for GitHub secrets setup
+2. Configure secrets in your GitHub repository settings
+3. Push to main branch or manually trigger the deployment workflow
+
 ## Who's integrating Excalidraw
 
 [Google Cloud](https://googlecloudcheatsheet.withgoogle.com/architecture) • [Meta](https://meta.com/) • [CodeSandbox](https://codesandbox.io/) • [Obsidian Excalidraw](https://github.com/zsviczian/obsidian-excalidraw-plugin) • [Replit](https://replit.com/) • [Slite](https://slite.com/) • [Notion](https://notion.so/) • [HackerRank](https://www.hackerrank.com/) • and many others

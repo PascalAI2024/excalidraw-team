@@ -20,28 +20,30 @@ This is a customized version of Excalidraw with Clerk authentication and Postgre
 
 ### 1. Database Setup
 
-The database is already configured with the following connection:
+Set up a PostgreSQL database with a connection string in the format:
 
 ```
-postgresql://devuser:Ansberga1@localhost:5432/excalidraw_db
+postgresql://username:password@localhost:5432/excalidraw_db
 ```
 
-Tables have been created using Prisma migrations.
+Tables will be created automatically using Prisma migrations during setup.
 
 ### 2. Environment Variables
 
-Create/update `.env.local` in the root directory:
+For deployment, all environment variables are managed through GitHub secrets. See the "Deployment Configuration" section below for details.
+
+For local development, set the following environment variables in your shell or development environment:
 
 ```bash
 # Clerk Authentication
-VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key_here
-CLERK_SECRET_KEY=your_clerk_secret_key_here
+export VITE_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key_here
+export CLERK_SECRET_KEY=your_clerk_secret_key_here
 
 # Database Configuration
-DATABASE_URL="postgresql://devuser:Ansberga1@localhost:5432/excalidraw_db"
+export DATABASE_URL="postgresql://your_db_user:your_db_password@localhost:5432/excalidraw_db"
 
 # App Configuration
-VITE_APP_BACKEND_URL=http://localhost:3001
+export VITE_APP_BACKEND_URL=http://localhost:3001
 ```
 
 ### 3. Install Dependencies
@@ -141,12 +143,57 @@ excalidraw/
 ## Troubleshooting
 
 1. **Database Connection Issues**: Ensure PostgreSQL is running and credentials are correct
-2. **Clerk Authentication**: Verify your Clerk keys are properly set in `.env.local`
+2. **Clerk Authentication**: Verify your Clerk keys are properly set in your environment variables
 3. **Port Conflicts**: Backend runs on 3001, frontend on 5173 by default
 
 ## Security Notes
 
-- Never commit `.env.local` or `.env` files
+- Never store environment variables in files
 - All API endpoints require authentication
 - Users can only delete their own drawings
 - Sharing requires ownership of the drawing
+
+## Deployment Configuration
+
+### GitHub Secrets Setup
+
+For deployment, all environment variables are managed through GitHub secrets. Configure the following secrets in your GitHub repository settings:
+
+#### Required GitHub Secrets:
+
+1. **Deployment Connection:**
+   - `DEPLOY_HOST` - Your server's IP address or hostname
+   - `DEPLOY_USER` - SSH username for deployment
+   - `DEPLOY_KEY` - SSH private key for authentication
+   - `DEPLOY_PORT` - SSH port (usually 22)
+
+2. **Application Secrets:**
+   - `VITE_CLERK_PUBLISHABLE_KEY` - Clerk publishable key
+   - `CLERK_SECRET_KEY` - Clerk secret key
+   - `DATABASE_URL` - PostgreSQL connection string
+
+3. **Environment URLs:**
+   - `VITE_APP_BACKEND_URL` - Backend API URL (e.g., `https://excalidraw.parlaymojo.com/api`)
+   - `FRONTEND_URL` - Frontend URL (e.g., `https://excalidraw.parlaymojo.com`)
+   - `BACKEND_PORT` - Backend server port (e.g., `3001`)
+
+### Local Development
+
+For local development, DO NOT use GitHub secrets. Instead:
+
+1. Set environment variables in your shell or development environment
+2. Use a tool like `direnv` or export variables in your shell profile
+3. Never store sensitive credentials in files
+
+### Deployment Process
+
+The deployment workflow (`/.github/workflows/deploy.yml`) automatically:
+1. Connects to your server via SSH
+2. Pulls the latest code
+3. Creates environment files from GitHub secrets
+4. Installs dependencies
+5. Builds the application
+6. Runs database migrations
+7. Restarts services with PM2
+
+Environment files are created fresh on each deployment from GitHub secrets, ensuring no sensitive data is stored in the repository.

@@ -1,7 +1,11 @@
 .DS_Store
+.env
+.env.development
 .env.development.local
 .env.local
+.env.production
 .env.production.local
+.env.test
 .env.test.local
 .envrc
 .eslintcache
@@ -29,3 +33,9 @@ meta*.json
 .claude
 
 /generated/prisma
+
+# Local scripts that might contain environment-specific settings
+start-app.sh
+setup-postgres.sh
+setup-and-verify-db.sh
+run-migrations.sh

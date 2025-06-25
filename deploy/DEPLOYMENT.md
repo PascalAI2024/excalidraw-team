@@ -33,21 +33,15 @@ sudo certbot --nginx -d excalidraw.parlaymojo.com
 
 ### 4. Configure GitHub Secrets
 
-In your GitHub repository settings, add these secrets:
+See [DEPLOYMENT_SECRETS.md](../DEPLOYMENT_SECRETS.md) for complete GitHub secrets configuration including:
 
-- `DEPLOY_HOST`: Your server IP or hostname
-- `DEPLOY_USER`: SSH username
-- `DEPLOY_KEY`: SSH private key (contents of ~/.ssh/id_rsa)
-- `DEPLOY_PORT`: SSH port (usually 22)
+- Deployment connection secrets (SSH)
+- Application secrets (Clerk, Database)
+- Environment URLs
 
 ### 5. Update Environment Variables
 
-On the server, edit `/var/www/excalidraw.parlaymojo.com/.env.local`:
-
-```bash
-VITE_CLERK_PUBLISHABLE_KEY=your_actual_clerk_key
-CLERK_SECRET_KEY=your_actual_clerk_secret
-```
+Environment variables should be managed through GitHub secrets for deployment, not through local files on the server. The deployment process will automatically create the necessary environment configuration from GitHub secrets.
 
 ## 🔄 Auto-Deployment
 
@@ -104,7 +98,7 @@ pm2 restart excalidraw-frontend
 sudo systemctl status postgresql
 
 # Test connection
-psql -U devuser -d excalidraw_db -h localhost
+psql -U [your_db_user] -d excalidraw_db -h localhost
 ```
 
 ### Build Failures
